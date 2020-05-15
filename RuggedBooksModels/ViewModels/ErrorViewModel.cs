@@ -1,6 +1,6 @@
 using System;
 
-namespace RuggedBooks.Models
+namespace RuggedBooksModels.ViewModels
 {
     public class ErrorViewModel
     {
