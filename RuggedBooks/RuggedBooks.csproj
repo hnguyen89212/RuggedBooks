@@ -16,6 +16,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RuggedBooksDAL\RuggedBooksDAL.csproj" />
+    <ProjectReference Include="..\RuggedBooksModels\RuggedBooksModels.csproj" />
+    <ProjectReference Include="..\RuggedBooksUtilities\RuggedBooksUtilities.csproj" />
   </ItemGroup>
 
 </Project>
