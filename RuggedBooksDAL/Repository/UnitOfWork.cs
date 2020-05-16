@@ -8,11 +8,7 @@ namespace RuggedBooksDAL.Repository
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private ApplicationDbContext _db;
-
-        public ICategoryRepository Category { get; private set; }
-
-        public IStoredProcedureCall StoredProcedureCall { get; private set; }
+        private ApplicationDbContext _db
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -20,6 +16,10 @@ namespace RuggedBooksDAL.Repository
             Category = new CategoryRepository(_db);
             StoredProcedureCall = new StoredProcedureCall(_db);
         }
+
+        public ICategoryRepository Category { get; private set; }
+
+        public IStoredProcedureCall StoredProcedureCall { get; private set; }
 
         public void Dispose()
         {
