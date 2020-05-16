@@ -8,7 +8,7 @@ namespace RuggedBooksDAL.Repository
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private ApplicationDbContext _db
+        private ApplicationDbContext _db;
 
         public UnitOfWork(ApplicationDbContext context)
         {
