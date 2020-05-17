@@ -7,6 +7,7 @@ using RuggedBooksDAL.Repository.IRepository;
 
 namespace RuggedBooks.Areas.Admin.Controllers
 {
+    [Area("Admin")]
     public class CategoryController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
