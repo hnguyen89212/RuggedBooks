@@ -81,6 +81,21 @@ namespace RuggedBooks.Areas.Admin.Controllers
             });
         }
 
+        [HttpDelete]
+        public IActionResult Delete(int Id)
+        {
+            Category category = _unitOfWork.Category.Get(Id);
+
+            if (category == null)
+            {
+                return Json(new { success = false, message = "Error removing category. Please try again." });
+            }
+
+            _unitOfWork.Category.Remove(category);
+            _unitOfWork.Save();
+            return Json(new { success = true, message = "Category is successfully removed." });
+        }
+
         #endregion
     }
 }

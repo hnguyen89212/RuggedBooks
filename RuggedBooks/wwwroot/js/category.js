@@ -33,3 +33,28 @@ function loadDataTable() {
         ]
     });
 }
+
+function Delete(url) {
+    swal({
+        title: "Are you sure about deleting this category?",
+        text: "You cannot undo this action later.",
+        icon: "warning",
+        buttons: true,
+        dangerMode: true
+    }).then(response => {
+        if (response) {
+            $.ajax({
+                type: "DELETE",
+                url: url,
+                success: function (data) {
+                    if (data.success) {
+                        toastr.success(data.message);
+                        dataTable.ajax.reload();
+                    } else {
+                        toastr.error(data.message);
+                    }
+                }
+            });
+        }
+    });
+}
