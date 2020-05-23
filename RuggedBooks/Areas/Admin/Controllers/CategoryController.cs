@@ -30,7 +30,7 @@ namespace RuggedBooks.Areas.Admin.Controllers
             // Id is null when we create/add a new cateogry
             if (Id == null)
             {
-                return View(Id);
+                return View(category);
             }
 
             // Otherwise, we are trying to update an existing? category
@@ -46,13 +46,37 @@ namespace RuggedBooks.Areas.Admin.Controllers
             return View(category);
         }
 
+        // Where does the Category parameter come from? It is from the Upsert view above.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Upsert(Category category)
+        {
+            // Where is ModelState from? It is crafted automatically.
+            if (ModelState.IsValid)
+            {
+                if (category.Id == 0)
+                {
+                    _unitOfWork.Category.Add(category);
+                }
+                else
+                {
+                    _unitOfWork.Category.Update(category);
+                }
+                _unitOfWork.Save();
+                //return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
+            }
+            return View(category);
+        }
+
         #region API Calls
 
         [HttpGet]
         public IActionResult GetAll()
         {
             var allCategories = _unitOfWork.Category.GetAll();
-            return Json(new {
+            return Json(new
+            {
                 data = allCategories
             });
         }

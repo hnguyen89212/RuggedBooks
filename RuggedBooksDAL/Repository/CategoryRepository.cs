@@ -24,7 +24,6 @@ namespace RuggedBooksDAL.Repository
             if (fetchedCategory != null)
             {
                 fetchedCategory.CategoryName = category.CategoryName;
-                _db.SaveChanges();
             }
         }
     }
