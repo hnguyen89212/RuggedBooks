@@ -16,5 +16,7 @@ namespace RuggedBooksDAL.Data
 
         // Registers the Category.class
         public DbSet<Category> Categories { get; set; }
+
+        public DbSet<CoverType> CoverTypes { get; set; }
     }
 }
