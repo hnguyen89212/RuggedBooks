@@ -7,7 +7,52 @@
 @model RuggedBooksModels.Category
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
+    var defaultTile = "Create New Category";
 }
 
-<h1>Upsert</h1>
+<form method="post">
+    <div class="row p-3 border">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
+        @if (Model.Id != 0)
+        {
+            defaultTile = "Edit Category";
+        }
+        <div class="col-12 border-bottom">
+            <h2 class="text-primary">
+                @defaultTile
+            </h2>
+        </div>
+
+        <div class="col-8 pt-4">
+            <div class="form-group row">
+                <div class="col-4">
+                    @* Why CategoryName? it is an attribute in the Category class. *@
+                    <label asp-for="CategoryName"></label>
+                </div>
+                <div class="col-8">
+                    <input asp-for="CategoryName" class="form-control" />
+                    <span asp-validation-for="CategoryName" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-8 offset-4">
+                    @if (Model.Id != 0)
+                    {
+                        // We are in Edit process. We re-use the _EditAndBackToList partial
+                        // The partial needs a model (which is an integer of the Category in this case).
+                        <partial name="_EditAndBackToListButton" model="Model.Id" />
+                    }
+                    else
+                    {
+                        <partial name="_CreateAndBackToListButton" />
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
