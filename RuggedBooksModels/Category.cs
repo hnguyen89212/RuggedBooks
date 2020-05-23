@@ -11,6 +11,7 @@ namespace RuggedBooksModels
         [Key]
         public int Id { get; set; }
 
+        // The Display annotation will replace asp-for in Razor page with the Name's value (Category Name in this case).
         [Display(Name="Category Name")]
         [Required]
         [MaxLength(50)]
