@@ -1,0 +1,13 @@
+﻿@* First thing we should check whenever working with view: do we need a model? *@
+@* This time, yes, there is a Category object passed to this view. *@
+
+@* Inside the view, there is a Back button that brings us back to previous page. *@
+@* That button is potentially used in many places. So, we go on create a partial view for it. *@
+
+@model RuggedBooksModels.Category
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Upsert</h1>
+
