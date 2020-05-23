@@ -1,0 +1,10 @@
+﻿<div class="row">
+    <div class="col">
+        <button type="submit" class="btn btn-primary form-control">Create</button>
+    </div>
+    <div class="col">
+        @* For the link, we do not specify which controller the Index is associated with. *@
+        @* But, when we use this partial view in another view, whatever the controller is in use in that complete view, it also controls this partial view. *@
+        <a asp-action="Index" class="btn btn-success form-control">Back to list</a>
+    </div>
+</div>

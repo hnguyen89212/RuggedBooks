@@ -1,0 +1,13 @@
+﻿@* This view is for editing. To facilitate that, we need an integer (id of the object). *@
+
+@model int
+
+<div class="row">
+    <div class="col">
+        @* We pass a parameter called Id with value is the whole model (in this case, an int) *@
+        <button asp-route-Id="@Model" type="submit" class="btn btn-primary form-control">Update</button>
+    </div>
+    <div class="col">
+        <a asp-action="Index" class="btn btn-success form-control">Back to list</a>
+    </div>
+</div>
