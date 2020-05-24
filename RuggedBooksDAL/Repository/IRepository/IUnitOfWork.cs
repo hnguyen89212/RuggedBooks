@@ -10,6 +10,8 @@ namespace RuggedBooksDAL.Repository.IRepository
 
         ICoverTypeRepository CoverType { get; }
 
+        IProductRepository Product { get; }
+
         IStoredProcedureCall StoredProcedureCall { get; }
 
         void Save();
