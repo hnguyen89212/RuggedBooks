@@ -16,13 +16,17 @@ namespace RuggedBooksModels
     {
         [Required]
         public string Name { get; set; }
-
+        
+        [Required]
         public string StreetAddress { get; set; }
 
+        [Required]
         public string City { get; set; }
 
+        [Required]
         public string State { get; set; }
 
+        [Required]
         public string PostalCode { get; set; }
 
         // We do not a Role column yet, so make this as not mapped.
