@@ -14,6 +14,8 @@ namespace RuggedBooksDAL.Repository.IRepository
 
         IStoredProcedureCall StoredProcedureCall { get; }
 
+        ICompanyRepository Company { get; }
+
         void Save();
     }
 }
