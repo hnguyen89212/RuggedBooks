@@ -5,6 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using RuggedBooksDAL.Repository;
+using RuggedBooksDAL.Repository.IRepository;
+using RuggedBooksModels;
 using RuggedBooksModels.ViewModels;
 
 namespace RuggedBooks.Area.Customer.Controllers
@@ -13,15 +16,19 @@ namespace RuggedBooks.Area.Customer.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, IUnitOfWork unitOfWork)
         {
             _logger = logger;
+            _unitOfWork = unitOfWork;
         }
 
+        // Retrieves all the products in db and render them in the homepage.
         public IActionResult Index()
         {
-            return View();
+            IEnumerable<Product> products = _unitOfWork.Product.GetAll(includeProperties:"Category,CoverType");
+            return View(products);
         }
 
         public IActionResult Privacy()
