@@ -14,6 +14,8 @@ using Microsoft.Extensions.Hosting;
 using RuggedBooksDAL.Data;
 using RuggedBooksDAL.Repository.IRepository;
 using RuggedBooksDAL.Repository;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using RuggedBooksUtilities;
 
 namespace RuggedBooks
 {
@@ -32,8 +34,11 @@ namespace RuggedBooks
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            //services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            //    .AddEntityFrameworkStores<ApplicationDbContext>();
+            services.AddIdentity<IdentityUser, IdentityRole>().AddDefaultTokenProviders()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
+            services.AddSingleton<IEmailSender, TempEmailSender>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddControllersWithViews().AddRazorRuntimeCompilation();
             services.AddRazorPages();
