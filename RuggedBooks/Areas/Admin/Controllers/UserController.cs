@@ -62,6 +62,28 @@ namespace RuggedBooks.Areas.Admin.Controllers
                 data = allApplicationUsers
             });
         }
+        
+        [HttpPost]
+        public IActionResult LockOrUnlock([FromBody] string Id)
+        {
+            var applicationUser = _unitOfWork.ApplicationUser.GetFirstOrDefault(u => u.Id == Id);
+            if (applicationUser == null)
+            {
+                return Json(new { success = false, message = "Error locking/unlocking user."});
+            }
+
+            if (applicationUser.LockoutEnd != null && applicationUser.LockoutEnd > DateTime.Now)
+            {
+                // User is currenly locked. We unlock him.
+                applicationUser.LockoutEnd = DateTime.Now;
+            }
+            else
+            {
+                applicationUser.LockoutEnd = DateTime.Now.AddYears(1000);
+            }
+            _unitOfWork.Save();
+            return Json(new { success = true, message = "Operation is successful." });
+        }
 
         #endregion
     }
