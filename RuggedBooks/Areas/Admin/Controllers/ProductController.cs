@@ -3,16 +3,19 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using RuggedBooksDAL.Repository.IRepository;
 using RuggedBooksModels;
 using RuggedBooksModels.ViewModels;
+using RuggedBooksUtilities;
 
 namespace RuggedBooks.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = SD.Role_Administrator)]
     public class ProductController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;

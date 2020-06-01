@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RuggedBooksDAL.Repository.IRepository;
 using RuggedBooksModels;
@@ -11,6 +12,7 @@ using RuggedBooksUtilities;
 namespace RuggedBooks.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = SD.Role_Administrator)]
     public class CoverTypeController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
