@@ -16,6 +16,8 @@ namespace RuggedBooksDAL.Repository.IRepository
 
         ICompanyRepository Company { get; }
 
+        IApplicationUserRepository ApplicationUser { get; }
+
         void Save();
     }
 }

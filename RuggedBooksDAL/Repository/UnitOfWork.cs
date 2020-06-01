@@ -18,6 +18,7 @@ namespace RuggedBooksDAL.Repository
             Product = new ProductRepository(_db);
             StoredProcedureCall = new StoredProcedureCall(_db);
             Company = new CompanyRepository(_db);
+            ApplicationUser = new ApplicationUserRepository(_db);
         }
 
         public ICategoryRepository Category { get; private set; }
@@ -29,6 +30,8 @@ namespace RuggedBooksDAL.Repository
         public IStoredProcedureCall StoredProcedureCall { get; private set; }
 
         public ICompanyRepository Company { get; private set; }
+
+        public IApplicationUserRepository ApplicationUser { get; private set; }
 
         public void Dispose()
         {
