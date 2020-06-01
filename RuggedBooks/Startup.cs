@@ -49,6 +49,11 @@ namespace RuggedBooks
                 options.AccessDeniedPath = $"/Identity/Account/AccessDenied";
 
             });
+
+            services.AddAuthentication().AddFacebook(options => {
+                options.AppId = "309127053428113";
+                options.AppSecret = "942a59278bc802b1350176e424ba373c";
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
