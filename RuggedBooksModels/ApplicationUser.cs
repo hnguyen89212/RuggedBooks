@@ -28,6 +28,12 @@ namespace RuggedBooksModels
         // We do not a Role column yet, so make this as not mapped.
         [NotMapped]
         public string Role { get; set; }
+
+        // Some users are Company, others are individuals.
+        // Hence, the CompanyId is nullable.
+        public int? CompanyId { get; set; }
+        [ForeignKey("CompanyId")]
+        public Company Company { get; set; }
     }
 }
 
