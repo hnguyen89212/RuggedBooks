@@ -22,6 +22,8 @@ namespace RuggedBooksDAL.Repository.IRepository
 
         IOrderHeaderRepository OrderHeader { get; }
 
+        IOrderDetailsRepository OrderDetails { get; }
+
         void Save();
     }
 }
