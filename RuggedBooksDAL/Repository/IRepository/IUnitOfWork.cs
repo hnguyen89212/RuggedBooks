@@ -20,6 +20,8 @@ namespace RuggedBooksDAL.Repository.IRepository
 
         IShoppingCartRepository ShoppingCart { get; }
 
+        IOrderHeaderRepository OrderHeader { get; }
+
         void Save();
     }
 }

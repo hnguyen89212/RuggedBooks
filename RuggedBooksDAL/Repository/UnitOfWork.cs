@@ -20,6 +20,7 @@ namespace RuggedBooksDAL.Repository
             Company = new CompanyRepository(_db);
             ApplicationUser = new ApplicationUserRepository(_db);
             ShoppingCart = new ShoppingCartRepository(_db);
+            OrderHeader = new OrderHeaderRepository(_db);
         }
 
         public ICategoryRepository Category { get; private set; }
@@ -35,6 +36,8 @@ namespace RuggedBooksDAL.Repository
         public IApplicationUserRepository ApplicationUser { get; private set; }
 
         public IShoppingCartRepository ShoppingCart { get; private set; }
+
+        public IOrderHeaderRepository OrderHeader { get; private set; }
 
         public void Dispose()
         {
