@@ -41,5 +41,18 @@ namespace RuggedBooks.Area.Customer.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+        public IActionResult Details(int productId)
+        {
+            var product = _unitOfWork.Product.GetFirstOrDefault(each => each.Id == productId, includeProperties:"Category,CoverType");
+
+            ShoppingCart shoppingCart = new ShoppingCart()
+            {
+                Product = product,
+                ProductId = product.Id
+            };
+
+            return View(shoppingCart);
+        }
     }
 }
