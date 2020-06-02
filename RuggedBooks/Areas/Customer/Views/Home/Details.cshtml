@@ -1,6 +1,7 @@
 ﻿@model RuggedBooksModels.ShoppingCart
 
 <form method="post">
+    @* We secretly placed an attribute here so later when we make Post request, we could access it via shoppingCart.ProductId. *@
     <input hidden asp-for="ProductId" />
     <div class="container backgroundWhite">
         <div class="card">
