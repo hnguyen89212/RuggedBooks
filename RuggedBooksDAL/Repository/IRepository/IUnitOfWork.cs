@@ -18,6 +18,8 @@ namespace RuggedBooksDAL.Repository.IRepository
 
         IApplicationUserRepository ApplicationUser { get; }
 
+        IShoppingCartRepository ShoppingCart { get; }
+
         void Save();
     }
 }
