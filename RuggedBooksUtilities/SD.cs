@@ -17,5 +17,7 @@ namespace RuggedBooksUtilities
         public const string Role_User_Company = "Company User";
         public const string Role_Administrator = "Administrator";
         public const string Role_Employee = "Employee";
+
+        public const string Shopping_Cart_Session = "Shopping_Cart_Session";
     }
 }

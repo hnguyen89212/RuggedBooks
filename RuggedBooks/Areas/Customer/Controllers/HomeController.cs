@@ -5,12 +5,14 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using RuggedBooksDAL.Repository;
 using RuggedBooksDAL.Repository.IRepository;
 using RuggedBooksModels;
 using RuggedBooksModels.ViewModels;
+using RuggedBooksUtilities;
 
 namespace RuggedBooks.Area.Customer.Controllers
 {
@@ -30,6 +32,21 @@ namespace RuggedBooks.Area.Customer.Controllers
         public IActionResult Index()
         {
             IEnumerable<Product> products = _unitOfWork.Product.GetAll(includeProperties: "Category,CoverType");
+
+            // When user first lands on Index, we retrieve any count from the DB and store in session.
+            // We need to do the same when user logs in. See the Login.cshtml.cs file.
+            var claimsIdentity = (ClaimsIdentity)User.Identity;
+            var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+            if (claim != null)
+            {
+                var count = _unitOfWork.ShoppingCart
+                    .GetAll(cart => cart.ApplicationUserId == claim.Value)
+                    .ToList()
+                    .Count();
+
+                HttpContext.Session.SetInt32(SD.Shopping_Cart_Session, count);
+            }
+
             return View(products);
         }
 
@@ -90,6 +107,16 @@ namespace RuggedBooks.Area.Customer.Controllers
                     _unitOfWork.ShoppingCart.Update(shoppingCartFromDb);
                 }
                 _unitOfWork.Save();
+
+                // Saves the total count in session
+                var count = _unitOfWork.ShoppingCart
+                    .GetAll(cart => cart.ApplicationUserId == shoppingCart.ApplicationUserId)
+                    .ToList()
+                    .Count();
+
+                HttpContext.Session.SetInt32(SD.Shopping_Cart_Session, count);
+                // technically, we could get by HttpContext.Session.SetObject(key, count);
+                // But the SessionExtension is more flexible if we would like to save a whole object.
 
                 return RedirectToAction(nameof(Index));
             }
