@@ -16,6 +16,7 @@ using RuggedBooksDAL.Repository.IRepository;
 using RuggedBooksDAL.Repository;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using RuggedBooksUtilities;
+using RuggedBooksUtilities.EmailWithMailKit;
 
 namespace RuggedBooks
 {
@@ -38,8 +39,15 @@ namespace RuggedBooks
             //    .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddIdentity<IdentityUser, IdentityRole>().AddDefaultTokenProviders()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            // SendGrid
             services.AddSingleton<IEmailSender, TempEmailSender>();
             services.Configure<EmailOptions>(Configuration);
+
+            // MailKit
+            services.AddSingleton<IEmailConfiguration>(Configuration.GetSection("EmailConfiguration").Get<EmailConfiguration>());
+            services.AddTransient<IEmailService, EmailService>();
+
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddControllersWithViews().AddRazorRuntimeCompilation();
             services.AddRazorPages();

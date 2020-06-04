@@ -17,6 +17,7 @@ using Microsoft.Extensions.Logging;
 using RuggedBooksDAL.Repository.IRepository;
 using RuggedBooksModels;
 using RuggedBooksUtilities;
+using RuggedBooksUtilities.EmailWithMailKit;
 
 namespace RuggedBooks.Areas.Identity.Pages.Account
 {
@@ -27,6 +28,7 @@ namespace RuggedBooks.Areas.Identity.Pages.Account
         private readonly UserManager<IdentityUser> _userManager;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
+        private readonly IEmailService _emailService;
         // an object that manages the roles in app.
         // Goes to Startup.cs and makes: services.AddIdentity<IdentityUser, IdentityRole>
         private readonly RoleManager<IdentityRole> _roleManager;
@@ -37,6 +39,7 @@ namespace RuggedBooks.Areas.Identity.Pages.Account
             SignInManager<IdentityUser> signInManager,
             ILogger<RegisterModel> logger,
             IEmailSender emailSender,
+            IEmailService emailService,
             RoleManager<IdentityRole> roleManager,
             IUnitOfWork unitOfWork)
         {
@@ -44,6 +47,7 @@ namespace RuggedBooks.Areas.Identity.Pages.Account
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
+            _emailService = emailService;
             _roleManager = roleManager;
             _unitOfWork = unitOfWork;
         }
@@ -190,8 +194,13 @@ namespace RuggedBooks.Areas.Identity.Pages.Account
                         values: new { area = "Identity", userId = user.Id, code = code, returnUrl = returnUrl },
                         protocol: Request.Scheme);
 
-                    await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
-                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                    EmailMessage emailMessage = new EmailMessage();
+                    EmailAddress to = new EmailAddress("New Valued Customer", user.Email);
+                    emailMessage.ToAddresses.Add(to);
+                    emailMessage.Subject = "Confirm Your Email at RuggedBooks";
+                    emailMessage.Content = $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.";
+                    _emailService.SendEmail(emailMessage);
+                    
 
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {
