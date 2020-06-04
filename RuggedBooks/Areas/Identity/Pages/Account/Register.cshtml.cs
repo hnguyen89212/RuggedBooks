@@ -29,7 +29,7 @@ namespace RuggedBooks.Areas.Identity.Pages.Account
         private readonly IEmailSender _emailSender;
         // an object that manages the roles in app.
         // Goes to Startup.cs and makes: services.AddIdentity<IdentityUser, IdentityRole>
-        private readonly RoleManager<IdentityRole> _roleManager; 
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IUnitOfWork _unitOfWork;
 
         public RegisterModel(
@@ -107,12 +107,15 @@ namespace RuggedBooks.Areas.Identity.Pages.Account
 
             // Initializes 2 lists for use in Register form.
             // Only Admin user could see those lists.
-            Input = new InputModel() { 
-                CompanyList = _unitOfWork.Company.GetAll().Select(company => new SelectListItem { 
+            Input = new InputModel()
+            {
+                CompanyList = _unitOfWork.Company.GetAll().Select(company => new SelectListItem
+                {
                     Text = company.Name,
                     Value = company.Id.ToString()
                 }),
-                RoleList = _roleManager.Roles.Where(role => role.Name != SD.Role_User_Individual).Select(role => role.Name).Select(role => new SelectListItem { 
+                RoleList = _roleManager.Roles.Where(role => role.Name != SD.Role_User_Individual).Select(role => role.Name).Select(role => new SelectListItem
+                {
                     Text = role,
                     Value = role
                 })
@@ -128,7 +131,8 @@ namespace RuggedBooks.Areas.Identity.Pages.Account
             if (ModelState.IsValid)
             {
                 //var user = new IdentityUser { UserName = Input.Email, Email = Input.Email };
-                var user = new ApplicationUser {
+                var user = new ApplicationUser
+                {
                     UserName = Input.Email,
                     Email = Input.Email,
                     CompanyId = Input.CompanyId,
@@ -206,7 +210,7 @@ namespace RuggedBooks.Areas.Identity.Pages.Account
                             // An admin is registering/signing up a user.
                             // Keeps the admin logged in and redirects him to a page where he could see a list of all users.
                             // Index page of User controller in the Admin area.
-                            return RedirectToAction("Index", "User", new { Area = "Admin"});
+                            return RedirectToAction("Index", "User", new { Area = "Admin" });
                         }
                     }
                 }
@@ -215,6 +219,24 @@ namespace RuggedBooks.Areas.Identity.Pages.Account
                     ModelState.AddModelError(string.Empty, error.Description);
                 }
             }
+
+            // When the administrator acidentally registers new account with an existing email,
+            // This page reloads, hence the role list (dropdown) needs to be populated again.
+            Input = new InputModel()
+            {
+                CompanyList = _unitOfWork.Company.GetAll().Select(i => new SelectListItem
+                {
+                    Text = i.Name,
+                    Value = i.Id.ToString()
+                }),
+                RoleList = _roleManager.Roles.Where(u => u.Name != SD.Role_User_Individual)
+                    .Select(x => x.Name)
+                    .Select(i => new SelectListItem
+                    {
+                        Text = i,
+                        Value = i
+                    })
+            };
 
             // If we got this far, something failed, redisplay form
             return Page();
