@@ -55,6 +55,12 @@ namespace RuggedBooks
                 options.AppId = "309127053428113";
                 options.AppSecret = "942a59278bc802b1350176e424ba373c";
             });
+
+            services.AddSession(options => {
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -75,6 +81,7 @@ namespace RuggedBooks
             app.UseStaticFiles();
 
             app.UseRouting();
+            app.UseSession();
 
             app.UseAuthentication();
             app.UseAuthorization();
