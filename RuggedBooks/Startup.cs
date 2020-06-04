@@ -17,6 +17,9 @@ using RuggedBooksDAL.Repository;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using RuggedBooksUtilities;
 using RuggedBooksUtilities.EmailWithMailKit;
+using RuggedBooksUtilities.PaymentWithStripe;
+using System.Configuration;
+using Stripe;
 
 namespace RuggedBooks
 {
@@ -47,6 +50,9 @@ namespace RuggedBooks
             // MailKit
             services.AddSingleton<IEmailConfiguration>(Configuration.GetSection("EmailConfiguration").Get<EmailConfiguration>());
             services.AddTransient<IEmailService, EmailService>();
+
+            // Stripe
+            services.Configure<StripeSettings>(Configuration.GetSection("Stripe"));
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddControllersWithViews().AddRazorRuntimeCompilation();
@@ -89,6 +95,9 @@ namespace RuggedBooks
             app.UseStaticFiles();
 
             app.UseRouting();
+
+            StripeConfiguration.ApiKey = Configuration.GetSection("Stripe")["SecretKey"];
+
             app.UseSession();
 
             app.UseAuthentication();
