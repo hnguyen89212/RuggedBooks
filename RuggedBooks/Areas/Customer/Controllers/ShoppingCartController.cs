@@ -15,6 +15,7 @@ using RuggedBooksModels;
 using RuggedBooksModels.ViewModels;
 using RuggedBooksUtilities;
 using RuggedBooksUtilities.EmailWithMailKit;
+using Stripe;
 
 namespace RuggedBooks.Areas.Customer.Controllers
 {
@@ -29,6 +30,7 @@ namespace RuggedBooks.Areas.Customer.Controllers
 
         private readonly UserManager<IdentityUser> _userManager;
 
+        [BindProperty]
         public ShoppingCartVM ShoppingCartVM { get; set; }
 
         public ShoppingCartController(IUnitOfWork unitOfWork, IEmailSender emailSender, IEmailService emailService, UserManager<IdentityUser> userManager)
@@ -191,6 +193,114 @@ namespace RuggedBooks.Areas.Customer.Controllers
             ShoppingCartVM.OrderHeader.PostalCode = ShoppingCartVM.OrderHeader.ApplicationUser.PostalCode;
 
             return View(ShoppingCartVM);
+        }
+
+        [HttpPost]
+        [ActionName("Summary")]
+        [ValidateAntiForgeryToken]
+        public IActionResult SummaryPost(string stripeToken)
+        {
+            var claimsIdentity = (ClaimsIdentity)User.Identity;
+            var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+
+            // The OrderHeader here is not initialized yet.
+            // We can get over this error by using [BindProperty] in the class attribute ShoppingCartVM.
+            // Hence, that VM is passed form Summary GET to Summary POST intact.
+            ShoppingCartVM.OrderHeader.ApplicationUser = _unitOfWork.ApplicationUser
+                                                            .GetFirstOrDefault(c => c.Id == claim.Value,
+                                                                    includeProperties: "Company");
+
+            ShoppingCartVM.ShoppingCarts = _unitOfWork.ShoppingCart
+                .GetAll(c => c.ApplicationUserId == claim.Value, includeProperties: "Product");
+
+            ShoppingCartVM.OrderHeader.PaymentStatus = SD.PaymentStatusPending;
+            ShoppingCartVM.OrderHeader.OrderStatus = SD.StatusPending;
+            ShoppingCartVM.OrderHeader.ApplicationUserId = claim.Value;
+            ShoppingCartVM.OrderHeader.OrderDate = DateTime.Now;
+
+            _unitOfWork.OrderHeader.Add(ShoppingCartVM.OrderHeader);
+            _unitOfWork.Save();
+
+            foreach (var item in ShoppingCartVM.ShoppingCarts)
+            {
+                item.Price = Utilities.GetPriceBasedOnQuantity(item.Count, item.Product.Price, item.Product.Price50, item.Product.Price100);
+                OrderDetails orderDetails = new OrderDetails()
+                {
+                    ProductId = item.ProductId,
+                    OrderId = ShoppingCartVM.OrderHeader.Id,
+                    Price = item.Price,
+                    Count = item.Count
+                };
+                ShoppingCartVM.OrderHeader.OrderTotal += orderDetails.Count * orderDetails.Price;
+                _unitOfWork.OrderDetails.Add(orderDetails);
+
+            }
+
+            _unitOfWork.ShoppingCart.RemoveRange(ShoppingCartVM.ShoppingCarts);
+            _unitOfWork.Save();
+            HttpContext.Session.SetInt32(SD.Shopping_Cart_Session, 0);
+
+            if (stripeToken == null)
+            {
+                // Order will be created for delayed payment for authroized company
+                ShoppingCartVM.OrderHeader.PaymentDueDate = DateTime.Now.AddDays(30);
+                ShoppingCartVM.OrderHeader.PaymentStatus = SD.PaymentStatusDelayedPayment;
+                ShoppingCartVM.OrderHeader.OrderStatus = SD.StatusApproved;
+            }
+            else
+            {
+                // Processes the payment
+                var options = new ChargeCreateOptions
+                {
+                    Amount = Convert.ToInt32(ShoppingCartVM.OrderHeader.OrderTotal * 100),
+                    Currency = "usd",
+                    Description = "Order ID : " + ShoppingCartVM.OrderHeader.Id,
+                    Source = stripeToken
+                };
+
+                var service = new ChargeService();
+                Charge charge = service.Create(options);
+
+                if (charge.Id == null)
+                {
+                    ShoppingCartVM.OrderHeader.PaymentStatus = SD.PaymentStatusRejected;
+                }
+                else
+                {
+                    ShoppingCartVM.OrderHeader.TransactionId = charge.Id;
+                }
+
+                if (charge.Status.ToLower() == "succeeded")
+                {
+                    ShoppingCartVM.OrderHeader.PaymentStatus = SD.PaymentStatusApproved;
+                    ShoppingCartVM.OrderHeader.OrderStatus = SD.StatusApproved;
+                    ShoppingCartVM.OrderHeader.PaymentDate = DateTime.Now;
+                }
+            }
+
+            _unitOfWork.Save();
+
+            return RedirectToAction(nameof(OrderConfirmation), "ShoppingCart", new { id = ShoppingCartVM.OrderHeader.Id });
+        }
+
+        public IActionResult OrderConfirmation(int id)
+        {
+            //OrderHeader orderHeader = _unitOfWork.OrderHeader.GetFirstOrDefault(u => u.Id == id);
+            //TwilioClient.Init(_twilioOptions.AccountSid, _twilioOptions.AuthToken);
+            //try
+            //{
+            //    var message = MessageResource.Create(
+            //        body: "Order Placed on Bulky Book. Your Order ID:" + id,
+            //        from: new Twilio.Types.PhoneNumber(_twilioOptions.PhoneNumber),
+            //        to: new Twilio.Types.PhoneNumber(orderHeader.PhoneNumber)
+            //        );
+            //}
+            //catch (Exception ex)
+            //{
+
+            //}
+
+            return View(id);
         }
     }
 }
