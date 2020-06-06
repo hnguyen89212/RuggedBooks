@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using RuggedBooksDAL.Data;
 using RuggedBooksModels;
 using RuggedBooksUtilities;
+using RuggedBooksUtilities.EmailWithMailKit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,11 +17,15 @@ namespace RuggedBooksDAL.DbInitializer
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
 
-        public DBInitializer(ApplicationDbContext db, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
+        private readonly IEmailConfiguration _emailConfiguration;
+
+        public DBInitializer(ApplicationDbContext db, UserManager<IdentityUser> userManager,
+            RoleManager<IdentityRole> roleManager, IEmailConfiguration emailConfiguration)
         {
             _db = db;
             _userManager = userManager;
             _roleManager = roleManager;
+            _emailConfiguration = emailConfiguration;
         }
 
         public void Initialize()
@@ -34,7 +39,7 @@ namespace RuggedBooksDAL.DbInitializer
             }
             catch (Exception ex)
             {
-
+                Console.WriteLine(ex.Message);
             }
 
             if (_db.Roles.Any(r => r.Name == SD.Role_Administrator))
@@ -49,14 +54,14 @@ namespace RuggedBooksDAL.DbInitializer
 
             _userManager.CreateAsync(new ApplicationUser
             {
-                UserName = "phuchai1994@gmail.com",
-                Email = "phuchai1994@gmail.com",
+                UserName = _emailConfiguration.SmtpUsername,
+                Email = _emailConfiguration.SmtpUsername,
                 EmailConfirmed = true,
-                Name = "Hai Nguyen"
+                Name = "Hai Nguyen Admin"
                 // Password must have lowercase, uppercase, number, special characters.
             }, "adminPASSWORD123*").GetAwaiter().GetResult();
 
-            ApplicationUser user = _db.ApplicationUsers.Where(u => u.Email == "phuchai1994@gmail.com").FirstOrDefault();
+            ApplicationUser user = _db.ApplicationUsers.Where(u => u.Email == _emailConfiguration.SmtpUsername).FirstOrDefault();
 
             _userManager.AddToRoleAsync(user, SD.Role_Administrator).GetAwaiter().GetResult();
         }
