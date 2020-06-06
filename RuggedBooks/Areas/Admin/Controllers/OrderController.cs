@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RuggedBooksDAL.Repository.IRepository;
 using RuggedBooksModels;
+using RuggedBooksModels.ViewModels;
 using RuggedBooksUtilities;
 using Stripe;
 
@@ -16,7 +17,10 @@ namespace RuggedBooks.Areas.Admin.Controllers
     [Authorize]
     public class OrderController : Controller
     {
-        IUnitOfWork _unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
+
+        [BindProperty]
+        public OrderDetailsVM OrderVM { get; set; }
 
         public OrderController(IUnitOfWork unitOfWork)
         {
@@ -27,6 +31,114 @@ namespace RuggedBooks.Areas.Admin.Controllers
         {
             return View();
         }
+
+        public IActionResult Details(int id)
+        {
+            OrderVM = new OrderDetailsVM()
+            {
+                OrderHeader = _unitOfWork.OrderHeader.GetFirstOrDefault(u => u.Id == id,
+                                                includeProperties: "ApplicationUser"),
+                OrderDetails = _unitOfWork.OrderDetails.GetAll(o => o.OrderId == id,
+                                                includeProperties: "Product")
+            };
+
+            return View(OrderVM);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [ActionName("Details")]
+        public IActionResult Details(string stripeToken)
+        {
+            OrderHeader orderHeader = _unitOfWork.OrderHeader.GetFirstOrDefault(u => u.Id == OrderVM.OrderHeader.Id,
+                                                includeProperties: "ApplicationUser");
+            if (stripeToken != null)
+            {
+                //process the payment
+                var options = new ChargeCreateOptions
+                {
+                    Amount = Convert.ToInt32(orderHeader.OrderTotal * 100),
+                    Currency = "usd",
+                    Description = "Order ID : " + orderHeader.Id,
+                    Source = stripeToken
+                };
+
+                var service = new ChargeService();
+                Charge charge = service.Create(options);
+
+                if (charge.Id == null)
+                {
+                    orderHeader.PaymentStatus = SD.PaymentStatusRejected;
+                }
+                else
+                {
+                    orderHeader.TransactionId = charge.Id;
+                }
+
+                if (charge.Status.ToLower() == "succeeded")
+                {
+                    orderHeader.PaymentStatus = SD.PaymentStatusApproved;
+
+                    orderHeader.PaymentDate = DateTime.Now;
+                }
+
+                _unitOfWork.Save();
+            }
+            return RedirectToAction("Details", "Order", new { id = orderHeader.Id });
+        }
+
+
+        [Authorize(Roles = SD.Role_Administrator + "," + SD.Role_Employee)]
+        public IActionResult StartProcessing(int id)
+        {
+            OrderHeader orderHeader = _unitOfWork.OrderHeader.GetFirstOrDefault(u => u.Id == id);
+            orderHeader.OrderStatus = SD.StatusInProcess;
+            _unitOfWork.Save();
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [Authorize(Roles = SD.Role_Administrator + "," + SD.Role_Employee)]
+        public IActionResult ShipOrder()
+        {
+            OrderHeader orderHeader = _unitOfWork.OrderHeader.GetFirstOrDefault(u => u.Id == OrderVM.OrderHeader.Id);
+            orderHeader.TrackingNumber = OrderVM.OrderHeader.TrackingNumber;
+            orderHeader.Carrier = OrderVM.OrderHeader.Carrier;
+            orderHeader.OrderStatus = SD.StatusShipped;
+            orderHeader.ShippingDate = DateTime.Now;
+            _unitOfWork.Save();
+            return RedirectToAction("Index");
+        }
+
+        [Authorize(Roles = SD.Role_Administrator + "," + SD.Role_Employee)]
+        public IActionResult CancelOrder(int id)
+        {
+            OrderHeader orderHeader = _unitOfWork.OrderHeader.GetFirstOrDefault(u => u.Id == id);
+            if (orderHeader.PaymentStatus == SD.StatusApproved)
+            {
+                var options = new RefundCreateOptions
+                {
+                    Amount = Convert.ToInt32(orderHeader.OrderTotal * 100),
+                    Reason = RefundReasons.RequestedByCustomer,
+                    Charge = orderHeader.TransactionId
+
+                };
+                var service = new RefundService();
+                Refund refund = service.Create(options);
+
+                orderHeader.OrderStatus = SD.StatusRefunded;
+                orderHeader.PaymentStatus = SD.StatusRefunded;
+            }
+            else
+            {
+                orderHeader.OrderStatus = SD.StatusCancelled;
+                orderHeader.PaymentStatus = SD.StatusCancelled;
+            }
+
+            _unitOfWork.Save();
+            return RedirectToAction("Index");
+        }
+
 
         #region API Calls
 
