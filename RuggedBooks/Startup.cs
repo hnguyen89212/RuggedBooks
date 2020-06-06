@@ -20,6 +20,7 @@ using RuggedBooksUtilities.EmailWithMailKit;
 using RuggedBooksUtilities.PaymentWithStripe;
 using System.Configuration;
 using Stripe;
+using RuggedBooksDAL.DbInitializer;
 
 namespace RuggedBooks
 {
@@ -55,6 +56,9 @@ namespace RuggedBooks
             services.Configure<StripeSettings>(Configuration.GetSection("Stripe"));
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            services.AddScoped<IDBInitializer, DBInitializer>();
+
             services.AddControllersWithViews().AddRazorRuntimeCompilation();
             services.AddRazorPages();
 
@@ -78,7 +82,7 @@ namespace RuggedBooks
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IDBInitializer dBInitializer)
         {
             if (env.IsDevelopment())
             {
@@ -102,6 +106,8 @@ namespace RuggedBooks
 
             app.UseAuthentication();
             app.UseAuthorization();
+
+            dBInitializer.Initialize();
 
             app.UseEndpoints(endpoints =>
             {

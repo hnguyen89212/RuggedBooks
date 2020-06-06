@@ -153,26 +153,6 @@ namespace RuggedBooks.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("User created a new account with password.");
 
-                    // We want to create all the roles right when initializing the DB.
-                    if (!await _roleManager.RoleExistsAsync(SD.Role_Administrator))
-                    {
-                        await _roleManager.CreateAsync(new IdentityRole(SD.Role_Administrator));
-                    }
-                    if (!await _roleManager.RoleExistsAsync(SD.Role_Employee))
-                    {
-                        await _roleManager.CreateAsync(new IdentityRole(SD.Role_Employee));
-                    }
-                    if (!await _roleManager.RoleExistsAsync(SD.Role_User_Company))
-                    {
-                        await _roleManager.CreateAsync(new IdentityRole(SD.Role_User_Company));
-                    }
-                    if (!await _roleManager.RoleExistsAsync(SD.Role_User_Individual))
-                    {
-                        await _roleManager.CreateAsync(new IdentityRole(SD.Role_User_Individual));
-                    }
-                    // The 1st user would be superuser, the admin.
-                    //await _userManager.AddToRoleAsync(user, SD.Role_Administrator);
-
                     if (user.Role == null)
                     {
                         await _userManager.AddToRoleAsync(user, SD.Role_User_Individual);
